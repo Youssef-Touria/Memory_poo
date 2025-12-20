@@ -1,82 +1,130 @@
-<html lang='fr'>
+<?php
+require_once 'Card.php';
+session_start();
 
+// Initialiser le deck
+if (!isset($_SESSION['deck']) || isset($_POST['restart'])) {
+    $deck = [];
+    $pairs = 8;
+    
+    for ($i = 1; $i <= $pairs; $i++) {
+        $imagePath = "./assets/card" . $i . ".png";
+        $deck[] = new Card($i * 2 - 1, $imagePath);
+        $deck[] = new Card($i * 2, $imagePath);
+    }
+    
+    shuffle($deck);
+    $_SESSION['deck'] = serialize($deck);
+    $_SESSION['flipped_cards'] = [];
+    $_SESSION['moves'] = 0;
+}
+
+// Désérialiser le deck (avec vérification)
+if (is_string($_SESSION['deck'])) {
+    $deck = unserialize($_SESSION['deck']);
+} else {
+    // Si c'est déjà un tableau (ancien format), réinitialiser
+    $deck = [];
+    $pairs = 8;
+    
+    for ($i = 1; $i <= $pairs; $i++) {
+        $imagePath = "./assets/card" . $i . ".png";
+        $deck[] = new Card($i * 2 - 1, $imagePath);
+        $deck[] = new Card($i * 2, $imagePath);
+    }
+    
+    shuffle($deck);
+    $_SESSION['deck'] = serialize($deck);
+    $_SESSION['flipped_cards'] = [];
+    $_SESSION['moves'] = 0;
+}
+
+// Traiter le clic sur une carte
+if (isset($_POST['cardId'])) {
+    $cardId = intval($_POST['cardId']);
+    $_SESSION['moves']++;
+    
+    // Trouver la carte cliquée
+    $clickedIndex = -1;
+    foreach ($deck as $index => $card) {
+        if ($card->getId() == $cardId) {
+            $clickedIndex = $index;
+            break;
+        }
+    }
+    
+    if ($clickedIndex !== -1 && !$deck[$clickedIndex]->matched) {
+        $deck[$clickedIndex]->flipped = true;
+        $_SESSION['flipped_cards'][] = $clickedIndex;
+        
+        // Si deux cartes sont retournées
+        if (count($_SESSION['flipped_cards']) == 2) {
+            $index1 = $_SESSION['flipped_cards'][0];
+            $index2 = $_SESSION['flipped_cards'][1];
+            
+            // Vérifier si c'est une paire
+            if ($deck[$index1]->getImage() === $deck[$index2]->getImage()) {
+                // C'est une paire !
+                $deck[$index1]->matched = true;
+                $deck[$index2]->matched = true;
+            } else {
+                // Pas une paire, cacher les cartes
+                $deck[$index1]->flipped = false;
+                $deck[$index2]->flipped = false;
+            }
+            
+            // Réinitialiser les cartes retournées
+            $_SESSION['flipped_cards'] = [];
+        }
+        
+        $_SESSION['deck'] = serialize($deck);
+    }
+}
+
+// Vérifier si toutes les paires sont trouvées
+$allMatched = true;
+foreach ($deck as $card) {
+    if (!$card->matched) {
+        $allMatched = false;
+        break;
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang='fr'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Jeu de carte</title>
+    <title>Memory Game - Jeu de Mémoire</title>
     <link rel='stylesheet' href='./style.css'>
 </head>
-
 <body>
-    <form method="post" class='game-board'>
-        <?php
-        require_once 'Card.php';
-        session_start();
-        if (!isset($_SESSION['deck'])) {
-            $deck = [];
-            $pairs = 8;
-            for ($i = 1; $i <= $pairs; $i++) {
-                $imagePath = "./assets/card" . $i . ".png";
-                $deck[] = new Card($i * 2 - 1, $imagePath);
-                $deck[] = new Card($i * 2, $imagePath);
-            }
-            shuffle($deck);
-            $_SESSION['deck'] = $deck;
-            $_SESSION['turn'] = true;
-        };
-        $allMatched = true;
-        $deck = ($_SESSION['deck']);
-        foreach ($deck as $card) {
-            if ($card->matched === false) {
-                $allMatched = false;
-            }
-        }
-
-
-
-        if (isset($_POST['cardId'])) {
-            for ($i = 0; $i < count($deck); $i++) {
-                if ($deck[$i]->getId() == $_POST['cardId']) {
-                    $deck[$i]->flipped = true;
-                    $flippedCard = $deck[$i]->getImage();
-                    if ($_SESSION['turn'] === false) {
-                        for ($j = 0; $j < count($deck); $j++) {
-                            if ($i !== $j && $deck[$j]->getImage() === $flippedCard && $deck[$j]->flipped === true) {
-                                $deck[$j]->matched = true;
-                                $deck[$i]->matched = true;
-                            }
-                        }
-                    }
-                } elseif ($_SESSION['turn']) {
-                    $deck[$i]->flipped = false;
-                }
-            }
-            $_SESSION['turn'] = !$_SESSION['turn'];
-            $_SESSION['deck'] = $deck;
-        }
-
-
-
-        if ($allMatched) {
-            echo "<div><h2>Félicitations ! Vous avez gagné !</h2><button type='submit' class='restart'>Recommencer</button></div>";
-            unset($_SESSION['deck']);
-            unset($_SESSION['turn']);
-            echo "";
-        } else {
-            foreach ($deck as $card) {
-                if ($card->flipped || $card->matched) {
-                    echo "<div class='card'>
-                <img src='" . $card->getImage() . "' alt='Card Image'>
-                </div>";
-                } else {
-                    echo "<button type='submit' class='card' name='cardId' value='" . $card->getId() . "'>
-                <img src='./assets/backside.png' alt='Card Back'>
-                </button>";
-                }
-            }
-        }
-
-
-        ?>
-    </form>
+    <div class="container">
+        <div class="stats">
+            <h1>🎮 Jeu de Mémoire</h1>
+            <p><strong>Coups :</strong> <?= $_SESSION['moves'] ?></p>
+        </div>
+        
+        <?php if ($allMatched): ?>
+            <div class="victory">
+                <h2>🎉 Félicitations !</h2>
+                <p class="victory-text">Vous avez gagné en <strong><?= $_SESSION['moves'] ?></strong> coups !</p>
+                <form method="post">
+                    <button type="submit" name="restart" class="btn-restart">🔄 Rejouer</button>
+                </form>
+            </div>
+        <?php else: ?>
+            <form method="post" class='game-board'>
+                <?php foreach ($deck as $card): ?>
+                    <button type='submit' name='cardId' value='<?= $card->getId() ?>'
+                            <?= ($card->flipped || $card->matched || count($_SESSION['flipped_cards']) >= 2) ? 'disabled' : '' ?>>
+                        <div class='card <?= $card->matched ? "matched" : "" ?>'>
+                            <img src='<?= ($card->flipped || $card->matched) ? $card->getImage() : "./assets/backside.png" ?>' alt='Card'>
+                        </div>
+                    </button>
+                <?php endforeach; ?>
+            </form>
+        <?php endif; ?>
+    </div>
 </body>
+</html>

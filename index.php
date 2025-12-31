@@ -17,15 +17,14 @@ if (!isset($_SESSION['deck']) || isset($_POST['restart'])) {
     shuffle($deck);
     $_SESSION['deck'] = serialize($deck);
     $_SESSION['flipped_cards'] = [];
-    $_SESSION['pending_hide'] = [];   // ✅ NEW
+    $_SESSION['pending_hide'] = []; // ✅ NEW
     $_SESSION['moves'] = 0;
 }
 
-// Désérialiser le deck (avec vérification)
+// Désérialiser le deck
 if (isset($_SESSION['deck']) && is_string($_SESSION['deck'])) {
     $deck = unserialize($_SESSION['deck']);
 } else {
-    // fallback
     $deck = [];
     for ($i = 1; $i <= $pairs; $i++) {
         $imagePath = "./assets/card" . $i . ".png";
@@ -66,7 +65,7 @@ if (isset($_POST['cardId'])) {
     // ✅ éviter matched + éviter re-cliquer une carte déjà retournée
     if ($clickedIndex !== -1 && !$deck[$clickedIndex]->matched && !$deck[$clickedIndex]->flipped) {
 
-        // ✅ Compter un "coup" seulement quand on retourne la 2e carte
+        // ✅ Compter un coup seulement quand on retourne la 2e carte
         if (count($_SESSION['flipped_cards']) == 1) {
             $_SESSION['moves']++;
         }
@@ -81,7 +80,6 @@ if (isset($_POST['cardId'])) {
 
             // Vérifier si c'est une paire
             if ($deck[$index1]->getImage() === $deck[$index2]->getImage()) {
-                // C'est une paire !
                 $deck[$index1]->matched = true;
                 $deck[$index2]->matched = true;
             } else {
@@ -89,7 +87,6 @@ if (isset($_POST['cardId'])) {
                 $_SESSION['pending_hide'] = [$index1, $index2];
             }
 
-            // Réinitialiser les cartes retournées
             $_SESSION['flipped_cards'] = [];
         }
 
@@ -107,15 +104,13 @@ foreach ($deck as $card) {
 }
 ?>
 <!DOCTYPE html>
-<html lang='fr'>
-
+<html lang="fr">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game - Jeu de Mémoire</title>
-    <link rel='stylesheet' href='./style.css'>
+    <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
     <div class="container">
         <div class="stats">
@@ -132,12 +127,12 @@ foreach ($deck as $card) {
                 </form>
             </div>
         <?php else: ?>
-            <form method="post" class='game-board'>
+            <form method="post" class="game-board">
                 <?php foreach ($deck as $card): ?>
-                    <button type='submit' name='cardId' value='<?= $card->getId() ?>'
+                    <button type="submit" name="cardId" value="<?= $card->getId() ?>"
                         <?= ($card->matched || count($_SESSION['flipped_cards']) >= 2) ? 'disabled' : '' ?>>
-                        <div class='card <?= $card->matched ? "matched" : "" ?>'>
-                            <img src='<?= ($card->flipped || $card->matched) ? $card->getImage() : "./assets/backside.png" ?>' alt='Card'>
+                        <div class="card <?= $card->matched ? "matched" : "" ?>">
+                            <img src="<?= ($card->flipped || $card->matched) ? $card->getImage() : "./assets/backside.png" ?>" alt="Card">
                         </div>
                     </button>
                 <?php endforeach; ?>
@@ -145,5 +140,4 @@ foreach ($deck as $card) {
         <?php endif; ?>
     </div>
 </body>
-
 </html>

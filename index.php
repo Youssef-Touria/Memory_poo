@@ -4,16 +4,18 @@ header('Content-Type: text/html; charset=UTF-8');
 /* =========================
    FIX SESSION (SERVEUR EN LIGNE)
 ========================= */
-ini_set('session.save_path', __DIR__ . '/sessions');
-if (!is_dir(__DIR__ . '/sessions')) {
-    mkdir(__DIR__ . '/sessions', 0777, true);
-}
+<?php
+session_save_path(__DIR__ . '/sessions');
 
 session_name("MEMORY_POO");
+
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+
 session_set_cookie_params([
     'lifetime' => 0,
-    'path' => '/Memory_poo/',
-    'secure' => true,
+    'path' => '/Memory_poo/',   // OK
+    'secure' => $isHttps,       // ✅ FIX IMPORTANT
     'httponly' => true,
     'samesite' => 'Lax'
 ]);
@@ -22,6 +24,7 @@ session_start();
 require_once 'Card.php';
 
 $pairs = 8;
+
 
 /* =========================
    INIT / RESTART

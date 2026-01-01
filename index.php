@@ -122,21 +122,18 @@ foreach ($deck as $card) {
             <div class="victory">
                 <h2>🎉 Félicitations !</h2>
                 <p class="victory-text">Vous avez gagné en <strong><?= $_SESSION['moves'] ?></strong> coups !</p>
-                <form method="post">
-                    <button type="submit" name="restart" class="btn-restart">🔄 Rejouer</button>
-                </form>
+           <form method="post" class="game-board">
+    <?php foreach ($deck as $card): ?>
+        <button ...>
+            <div class="card ...">
+                <img ...>
             </div>
-        <?php else: ?>
-            <form method="post" class="game-board">
-                <?php foreach ($deck as $card): ?>
-                    <button type="submit" name="cardId" value="<?= $card->getId() ?>"
-                        <?= ($card->matched || count($_SESSION['flipped_cards']) >= 2) ? 'disabled' : '' ?>>
-                        <div class="card <?= $card->matched ? "matched" : "" ?>">
-                            <img src="<?= ($card->flipped || $card->matched) ? $card->getImage() : "./assets/backside.png" ?>" alt="Card">
-                        </div>
-                    </button>
-                <?php endforeach; ?>
-            </form>
+        </button>
+    <?php endforeach; ?>
+</form>
+
+           
+              
         <?php endif; ?>
     </div>
 </body>

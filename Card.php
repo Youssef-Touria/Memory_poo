@@ -22,7 +22,7 @@ class Card
         return $this->image;
     }
 
-    // MÃ©thodes ajoutÃ©es pour la nouvelle version
+    // Méthodes ajoutées pour la nouvelle version
     public function isMatched()
     {
         return $this->matched;

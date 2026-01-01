@@ -25,8 +25,7 @@ if (!isset($_SESSION['deck']) || isset($_POST['restart'])) {
 
     // ✅ PRG: évite le scroll + resoumission
     if (isset($_POST['restart'])) {
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
+        
     }
 }
 

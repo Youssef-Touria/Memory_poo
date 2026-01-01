@@ -4,7 +4,7 @@ header('Content-Type: text/html; charset=UTF-8');
 /* =========================
    FIX SESSION (SERVEUR EN LIGNE)
 ========================= */
-<?php
+
 session_save_path(__DIR__ . '/sessions');
 
 session_name("MEMORY_POO");

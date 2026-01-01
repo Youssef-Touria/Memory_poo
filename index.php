@@ -1,6 +1,20 @@
 <?php
-require_once 'Card.php';
+header('Content-Type: text/html; charset=UTF-8');
+
+// 🔐 Fix session en ligne (HTTPS)
+session_name("MEMORY_POO");
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/Memory_poo/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
 session_start();
+require_once 'Card.php';
+
+
 
 $pairs = 8;
 

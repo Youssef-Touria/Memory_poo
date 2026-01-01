@@ -21,4 +21,31 @@ class Card
     {
         return $this->image;
     }
+
+    // Méthodes ajoutées pour la nouvelle version
+    public function isMatched()
+    {
+        return $this->matched;
+    }
+
+    public function setMatched($matched)
+    {
+        $this->matched = $matched;
+    }
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->id,
+            'image' => $this->image,
+            'matched' => $this->matched
+        ];
+    }
+
+    public static function fromArray($data)
+    {
+        $card = new Card($data['id'], $data['image']);
+        $card->matched = $data['matched'];
+        return $card;
+    }
 }
